@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>NINJA: SHADOW WARRIOR</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101820;color:white;font-family:Arial;overflow:hidden;touch-action:none}
+header{text-align:center;padding:10px;background:#17232c;font-weight:bold;color:#ffd166}
+canvas{display:block;width:100vw;height:72vh;background:#263b32}
+#hud{display:flex;justify-content:space-around;padding:8px;background:#17232c}
+.controls{display:flex;justify-content:space-around;align-items:center;padding:12px;background:#101820}
+button{border:0;border-radius:50%;width:65px;height:65px;background:#d69b35;color:#111;font-weight:bold;font-size:14px;touch-action:none}
+#stick{background:#364957;color:white}
+</style>
+</head>
+<body>
+<header>🥷 NINJA: SHADOW WARRIOR</header>
+<div id="hud"><span id="hp">❤️ 100</span><span id="score">⚔️ 0</span><span>MISSION: SURVIVE</span></div>
+<canvas id="game"></canvas>
+<div class="controls">
+<button id="left">◀</button><button id="up">▲</button>
+<button id="down">▼</button><button id="right">▶</button>
+<button id="attack">ATTACK</button>
+</div>
+<script>
+const c=document.getElementById("game"),ctx=c.getContext("2d");
+function resize(){c.width=innerWidth;c.height=innerHeight*.72}
+resize();onresize=resize;
+let p={x:150,y:180,hp:100},score=0,keys={},enemies=[];
+for(let i=0;i<7;i++)enemies.push({x:80+Math.random()*(c.width-120),y:60+Math.random()*(c.height-120),hp:2});
+function control(id,key){
+let b=document.getElementById(id);
+b.onpointerdown=e=>{e.preventDefault();keys[key]=true};
+b.onpointerup=b.onpointerleave=b.onpointercancel=()=>keys[key]=false;
+}
+control("left","left");control("right","right");control("up","up");control("down","down");
+document.getElementById("attack").onpointerdown=()=>{
+enemies.forEach(e=>{if(Math.hypot(e.x-p.x,e.y-p.y)<75)e.hp--});
+enemies=enemies.filter(e=>e.hp>0);score+=10;
+document.getElementById("score").textContent="⚔️ "+score;
+};
+function draw(){
+ctx.fillStyle="#294638";ctx.fillRect(0,0,c.width,c.height);
+ctx.strokeStyle="#42634c";ctx.lineWidth=2;
+for(let x=0;x<c.width;x+=55){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.height);ctx.stroke()}
+for(let y=0;y<c.height;y+=55){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke()}
+if(keys.left)p.x-=3;if(keys.right)p.x+=3;if(keys.up)p.y-=3;if(keys.down)p.y+=3;
+p.x=Math.max(15,Math.min(c.width-15,p.x));p.y=Math.max(20,Math.min(c.height-20,p.y));
+ctx.font="30px Arial";ctx.textAlign="center";ctx.fillText("🥷",p.x,p.y);
+enemies.forEach(e=>{
+let d=Math.hypot(p.x-e.x,p.y-e.y);
+if(d<180){e.x+=(p.x-e.x)/d*.6;e.y+=(p.y-e.y)/d*.6}
+ctx.fillText("👹",e.x,e.y);
+if(d<25){p.hp=Math.max(0,p.hp-.025)}
+});
+document.getElementById("hp").textContent="❤️ "+Math.ceil(p.hp);
+if(p.hp<=0){ctx.fillStyle="white";ctx.font="30px Arial";ctx.fillText("GAME OVER",c.width/2,c.height/2)}
+else if(enemies.length===0){ctx.fillStyle="white";ctx.font="24px Arial";ctx.fillText("VICTORY! 🏆",c.width/2,c.height/2)}
+else requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
